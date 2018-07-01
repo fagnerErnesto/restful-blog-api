@@ -1,33 +1,50 @@
 const express = require('express');
 const logger = require('morgan');
-const errorhandler = require('errorhandler');
+const errorHandler = require('errorhandler');
 const bodyParser = require('body-parser');
 
+const routes = require('./routes');
+
 let store = {};
-store.accounts = [];
+store.posts = [];
 
 let app = express();
 
-app.use(bodyParser.json());
 app.use(logger('dev'));
-app.use(errorhandler());
+app.use(errorHandler());
+app.use(bodyParser.json());
 
-app.get('/accounts', (req, res) => {
-    res.status(200).send(store.accounts);
-});
-app.post('/accounts', (req, res)=>{
-    let newAccount = req.body;
-    let id = store.accounts.length;
-    store.accounts.push(newAccount);
-    res.status(201).send({"id":id});
-});
-app.put('/accounts/:id', (req, res) => {
-    store.accounts[req.params.id] = req.body;
-    res.status(200).send(store.accounts[req.params.id]);
-});
-app.delete('/accounts/:id', (req, res) => {
-    store.accounts.splice(req.params.id, 1);
-    res.status(204).send('ok');
+// routes from post
+app.get('/posts', (req, res) => {
+    routes.post.getPosts(req, res, store);
 });
 
+app.post('/posts', (req, res) => {
+    routes.post.addPosts(req, res, store);
+});
+
+app.put('/posts/:postId', (req, res) => {
+    routes.post.updatePosts(req, res, store);
+});
+
+app.delete('/posts/:postId', (req, res) => {
+    routes.post.deletePost(req, res, store);
+});
+
+// routes from comments
+app.get('/posts/:postId/comments', (req, res) => {
+    routes.comment.getComments(req, res, store);
+});
+
+app.post('/posts/:postId/comments', (req, res) => {
+    routes.comment.addComments(req, res, store);
+});
+
+app.put('/posts/:postId/comments/:commentId', (req, res) => {
+    routes.comment.updateComments(req, res, store);
+});
+
+app.delete('/posts/:postId/comments/:commentId', (req, res) => {
+    routes.comment.deleteComments(req, res, store);
+});
 app.listen(3000);
